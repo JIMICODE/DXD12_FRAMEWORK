@@ -139,9 +139,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="GameTImer.h" />
+    <ClInclude Include="MathHelper.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameTImer.cpp" />
+    <ClCompile Include="MathHelper.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

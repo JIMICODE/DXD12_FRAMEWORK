@@ -18,9 +18,15 @@
     <ClInclude Include="GameTImer.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MathHelper.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameTImer.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MathHelper.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
