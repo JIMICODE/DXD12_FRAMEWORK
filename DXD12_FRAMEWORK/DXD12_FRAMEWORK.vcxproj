@@ -146,6 +146,7 @@
     <ClInclude Include="MathHelper.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="d3dapp.cpp" />
     <ClCompile Include="d3dUtil.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="GameTImer.cpp" />
