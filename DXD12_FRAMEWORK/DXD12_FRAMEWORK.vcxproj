@@ -138,6 +138,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="d3dapp.h" />
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
