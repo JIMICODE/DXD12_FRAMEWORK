@@ -29,7 +29,7 @@ public:
 	int Run();
 
 	virtual bool Initialize();
-	virtual LRESULT MsgPro(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+	virtual LRESULT MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
 protected:
 	virtual void CreateRtvAndDsvDescriptorHeaps();
@@ -70,7 +70,7 @@ protected:
 		return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
 	}
 
-	void CalculateFrameState();
+	void CalculateFrameStats();
 
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
@@ -79,7 +79,7 @@ protected:
 protected:
 	static D3DApp* mApp;
 
-	HINSTANCE mhAppInt = nullptr; //application instnace handle
+	HINSTANCE mhAppInst = nullptr; //application instnace handle
 	HWND mhMainWnd = nullptr;//main window handle
 	bool mAppPaused = false;//is the application paused?
 	bool mMinmized = false; //is the application minimized?
