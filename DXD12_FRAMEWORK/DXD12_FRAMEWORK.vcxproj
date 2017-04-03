@@ -144,6 +144,7 @@
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="GameTImer.h" />
     <ClInclude Include="MathHelper.h" />
+    <ClInclude Include="TC.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dapp.cpp" />
@@ -151,6 +152,8 @@
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="GameTImer.cpp" />
     <ClCompile Include="MathHelper.cpp" />
+    <ClCompile Include="TC.cpp" />
+    <ClCompile Include="Test_Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

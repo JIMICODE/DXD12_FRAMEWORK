@@ -38,9 +38,9 @@ protected:
 	virtual void Draw(const GameTimer& gt) = 0;
 
 	//Convinience override for handing mouse input
-	virtual void OnMouseDown(WPARAM btnState, int x, int y);
-	virtual void OnMouseUp9(WPARAM btnState, int x, int y);
-	virtual void OnMouseMove(WPARAM btnState, int x, int y);
+	virtual void OnMouseDown(WPARAM btnState, int x, int y) {}
+	virtual void OnMouseUp(WPARAM btnState, int x, int y) {}
+	virtual void OnMouseMove(WPARAM btnState, int x, int y) {}
 
 protected:
 
@@ -51,30 +51,17 @@ protected:
 
 	void FlushCommandQueue();
 
-	ID3D12Resource* CurrentBackBuffer()const
-	{
-		return mSwapChainBuffer[mCurrBackBuffer].Get();
-	}
+	ID3D12Resource* CurrentBackBuffer()const;
 
-	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const
-	{
-		return CD3DX12_CPU_DESCRIPTOR_HANDLE(
-			mRtvHeap->GetCPUDescriptorHandleForHeapStart(),
-			mCurrBackBuffer,
-			mRtvDescriptorSize
-		);
-	}
+	D3D12_CPU_DESCRIPTOR_HANDLE CurrentBackBufferView()const;
 
-	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const
-	{
-		return mDsvHeap->GetCPUDescriptorHandleForHeapStart();
-	}
+	D3D12_CPU_DESCRIPTOR_HANDLE DepthStencilView()const;
 
 	void CalculateFrameStats();
 
 	void LogAdapters();
 	void LogAdapterOutputs(IDXGIAdapter* adapter);
-	void LogOutputDOsplayModes(IDXGIOutput* output, DXGI_FORMAT format);
+	void LogOutputDisplayModes(IDXGIOutput* output, DXGI_FORMAT format);
 
 protected:
 	static D3DApp* mApp;
@@ -82,9 +69,9 @@ protected:
 	HINSTANCE mhAppInst = nullptr; //application instnace handle
 	HWND mhMainWnd = nullptr;//main window handle
 	bool mAppPaused = false;//is the application paused?
-	bool mMinmized = false; //is the application minimized?
+	bool mMinimized = false; //is the application minimized?
 	bool mMaximized = false;// is hte application maximized ?
-	bool mReszing = false;//are the resize bars being dragged?
+	bool mResizing = false;//are the resize bars being dragged?
 	bool mFullscreenState = false;//fullscreen enabled
 
 	//Set true to use aX MSAA. The default is false.
@@ -102,7 +89,7 @@ protected:
 	UINT64 mCurrentFence = 0;
 
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> mCommandQueue;
-	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdAlloc;
+	Microsoft::WRL::ComPtr<ID3D12CommandAllocator> mDirectCmdListAlloc;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> mCommandList;
 
 	static const int SwapChainBufferCount = 2;
@@ -118,7 +105,7 @@ protected:
 
 	UINT mRtvDescriptorSize = 0;
 	UINT mDsvDescriptorSize = 0;
-	UINT mCbvSrvDescriptorSize = 0;
+	UINT mCbvSrvUavDescriptorSize = 0;
 
 	//Derived class should set these in dericed constructor to customize
 	//starting value.
@@ -126,7 +113,7 @@ protected:
 	std::wstring mMainWndCaption = L"d3d_App";
 	D3D_DRIVER_TYPE md3dDriverType = D3D_DRIVER_TYPE_HARDWARE;
 	DXGI_FORMAT mBackBufferFormat = DXGI_FORMAT_R8G8B8A8_UNORM;
-	DXGI_FORMAT mSepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	DXGI_FORMAT mDepthStencilFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	int mClientWidth = 800;
 	int mClientHeight = 600;
 };

@@ -282,7 +282,7 @@ struct Texture
 #endif
 
 #ifndef ReleaseCom
-#define ReleaseCom(x) {if(x){x->Release(); x = 0}}
+#define ReleaseCom(x) {if(x){x->Release(); x = 0;}}
 #endif
 
 #endif // !D3DUTIL_H_
