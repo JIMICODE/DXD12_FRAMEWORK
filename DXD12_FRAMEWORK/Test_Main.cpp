@@ -12,7 +12,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE preInstance, PSTR cmdLine, int
 
 	try
 	{
-		InitDirect3DApp theApp(hInstance);
+		BoxApp theApp(hInstance);
+
 		if (!theApp.Initialize())
 			return 0;
 

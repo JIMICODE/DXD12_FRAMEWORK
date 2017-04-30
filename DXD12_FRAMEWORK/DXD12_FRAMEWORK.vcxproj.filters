@@ -36,6 +36,9 @@
     <ClInclude Include="TC.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="UploadBuffer.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameTImer.cpp">

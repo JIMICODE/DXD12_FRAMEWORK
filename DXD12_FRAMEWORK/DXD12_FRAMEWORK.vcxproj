@@ -145,6 +145,7 @@
     <ClInclude Include="GameTImer.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="TC.h" />
+    <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="d3dapp.cpp" />
