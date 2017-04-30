@@ -61,6 +61,8 @@ void BoxApp::Update(const GameTimer& gt)
 
 	ObjectConstants objConstants;
 	XMStoreFloat4x4(&objConstants.WorldViewProj, XMMatrixTranspose(worldViewProj));
+	objConstants.time = gt.TotalTime();
+	objConstants.pulseColor = XMFLOAT4(Colors::Blue);
 	mObjectCB->CopyData(0, objConstants);
 }
 
@@ -97,8 +99,9 @@ void BoxApp::Draw(const GameTimer& gt)
 		mCbvHeap->GetGPUDescriptorHandleForHeapStart());
 
 	mCommandList->DrawIndexedInstanced(
-		mBoxGeo->DrawArgs["box"].IndexCount, 1, 0, 0, 0
+		36, 1, 0, 0, 0
 	);
+	mCommandList->DrawIndexedInstanced(18, 1, 36, 8, 0);
 
 	mCommandList->ResourceBarrier(1,
 		&CD3DX12_RESOURCE_BARRIER::Transition(CurrentBackBuffer(),
@@ -228,14 +231,14 @@ void BoxApp::BuildShadersAndInputLayout()
 	mInputLayout = {
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0},
-		{"COLOR", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0 ,12,
+		{"COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0 ,12,
 		D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0}
 	};
 }
 
 void BoxApp::BuildBoxGeometry()
 {
-	std::array<Vertex, 8> vertices =
+	std::array<Vertex, 13> vertices =
 	{
 		Vertex({ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(Colors::White) }),
 		Vertex({ XMFLOAT3(-1.0f, +1.0f, -1.0f), XMFLOAT4(Colors::Black) }),
@@ -244,10 +247,16 @@ void BoxApp::BuildBoxGeometry()
 		Vertex({ XMFLOAT3(-1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Blue) }),
 		Vertex({ XMFLOAT3(-1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Yellow) }),
 		Vertex({ XMFLOAT3(+1.0f, +1.0f, +1.0f), XMFLOAT4(Colors::Cyan) }),
-		Vertex({ XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta) })
+		Vertex({ XMFLOAT3(+1.0f, -1.0f, +1.0f), XMFLOAT4(Colors::Magenta) }),
+
+		Vertex({ XMFLOAT3(+1.0f, +2.0f, -1.0f), XMFLOAT4(Colors::Green) }),
+		Vertex({ XMFLOAT3(+1.0f, +2.0f, +1.0f), XMFLOAT4(Colors::Green) }),
+		Vertex({ XMFLOAT3(-1.0f, +2.0f, +1.0f), XMFLOAT4(Colors::Green) }),
+		Vertex({ XMFLOAT3(-1.0f, +2.0f, -1.0f), XMFLOAT4(Colors::Green) }),
+		Vertex({ XMFLOAT3(0.0f, +3.0f, 0.0f), XMFLOAT4(Colors::Red) })
 	};
 
-	std::array<std::uint16_t, 36> indices = 
+	std::array<std::uint16_t, 54> indices = 
 	{
 		//front face
 		0,1,2,
@@ -266,7 +275,17 @@ void BoxApp::BuildBoxGeometry()
 		1,6,2,
 		//bottom face
 		4,0,3,
-		4,3,7
+		4,3,7,
+
+		//
+		0,1,2,
+		0,2,3,
+
+		0,4,1,
+		1,4,2,
+		2,4,3,
+		0,3,4
+
 	};
 
 	const UINT vbByteSize = (UINT)vertices.size() * sizeof(Vertex);
