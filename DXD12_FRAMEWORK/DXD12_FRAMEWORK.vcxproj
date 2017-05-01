@@ -142,6 +142,7 @@
     <ClInclude Include="d3dUtil.h" />
     <ClInclude Include="d3dx12.h" />
     <ClInclude Include="DDSTextureLoader.h" />
+    <ClInclude Include="FrameResource.h" />
     <ClInclude Include="GameTImer.h" />
     <ClInclude Include="MathHelper.h" />
     <ClInclude Include="TC.h" />
