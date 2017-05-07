@@ -146,7 +146,6 @@
     <ClInclude Include="GameTImer.h" />
     <ClInclude Include="GeometryGenerator.h" />
     <ClInclude Include="MathHelper.h" />
-    <ClInclude Include="TC.h" />
     <ClInclude Include="UploadBuffer.h" />
   </ItemGroup>
   <ItemGroup>
@@ -158,8 +157,6 @@
     <ClCompile Include="GeometryGenerator.cpp" />
     <ClCompile Include="MathHelper.cpp" />
     <ClCompile Include="ShapeApp.cpp" />
-    <ClCompile Include="TC.cpp" />
-    <ClCompile Include="Test_Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

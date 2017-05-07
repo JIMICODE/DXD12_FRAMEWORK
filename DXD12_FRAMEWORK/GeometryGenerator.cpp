@@ -434,7 +434,7 @@ GeometryGenerator::MeshData GeometryGenerator::CreateGrid(float width, float dep
 			k += 6; // next quad
 		}
 	}
-
+	return meshData;
 }
 
 GeometryGenerator::MeshData GeometryGenerator::CreateQuad(float x, float y, float w, float h, float depth)

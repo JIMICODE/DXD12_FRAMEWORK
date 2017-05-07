@@ -166,7 +166,7 @@ struct MeshGeometry
 	Microsoft::WRL::ComPtr<ID3DBlob> VertexBufferCPU = nullptr;
 	Microsoft::WRL::ComPtr<ID3DBlob> IndexBufferCPU = nullptr;
 
-	Microsoft::WRL::ComPtr<ID3D12Resource> VertextBufferGPU = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferGPU = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12Resource> IndexBufferGPU = nullptr;
 
 	Microsoft::WRL::ComPtr<ID3D12Resource> VertexBufferUploader = nullptr;
@@ -186,7 +186,7 @@ struct MeshGeometry
 	D3D12_VERTEX_BUFFER_VIEW VertexBufferView() const
 	{
 		D3D12_VERTEX_BUFFER_VIEW vbv;
-		vbv.BufferLocation = VertextBufferGPU->GetGPUVirtualAddress();
+		vbv.BufferLocation = VertexBufferGPU->GetGPUVirtualAddress();
 		vbv.StrideInBytes = VertexByteStride;
 		vbv.SizeInBytes = VertexBufferByteSize;
 
