@@ -1,22 +1,22 @@
-#pragma once
+//***************************************************************************************
+// GameTimer.h by Frank Luna (C) 2011 All Rights Reserved.
+//***************************************************************************************
 
-#ifndef GAMETIMER_H_
-#define GAMETIMER_H_
-
-#include<Windows.h>
+#ifndef GAMETIMER_H
+#define GAMETIMER_H
 
 class GameTimer
 {
 public:
 	GameTimer();
 
-	float DeltaTime() const; // in seconds
-	float TotalTime() const; // int seconds
+	float TotalTime()const; // in seconds
+	float DeltaTime()const; // in seconds
 
-	void Reset(); // call defore message loop.
-	void Start(); // call when unpauseed.
-	void Stop(); // call when paused.
-	void Tick(); // call every frame
+	void Reset(); // Call before message loop.
+	void Start(); // Call when unpaused.
+	void Stop();  // Call when paused.
+	void Tick();  // Call every frame.
 
 private:
 	double mSecondsPerCount;
@@ -31,4 +31,4 @@ private:
 	bool mStopped;
 };
 
-#endif // !CLASS_TIMER
+#endif // GAMETIMER_H
