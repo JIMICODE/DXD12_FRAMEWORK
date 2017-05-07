@@ -1,8 +1,14 @@
-#include"d3dapp.h"
-#include"MathHelper.h"
-#include"UploadBuffer.h"
-#include"FrameResource.h"
-#include"GeometryGenerator.h"
+//***************************************************************************************
+// ShapesApp.cpp by Frank Luna (C) 2015 All Rights Reserved.
+//
+// Hold down '1' key to view scene in wireframe mode.
+//***************************************************************************************
+
+#include "d3dApp.h"
+#include "MathHelper.h"
+#include "UploadBuffer.h"
+#include "GeometryGenerator.h"
+#include "FrameResource.h"
 
 using Microsoft::WRL::ComPtr;
 using namespace DirectX;
@@ -10,32 +16,44 @@ using namespace DirectX::PackedVector;
 
 const int gNumFrameResources = 3;
 
+// Lightweight structure stores parameters to draw a shape.  This will
+// vary from app-to-app.
 struct RenderItem
 {
 	RenderItem() = default;
 
+	// World matrix of the shape that describes the object's local space
+	// relative to the world space, which defines the position, orientation,
+	// and scale of the object in the world.
 	XMFLOAT4X4 World = MathHelper::Identity4X4();
 
+	// Dirty flag indicating the object data has changed and we need to update the constant buffer.
+	// Because we have an object cbuffer for each FrameResource, we have to apply the
+	// update to each FrameResource.  Thus, when we modify obect data we should set 
+	// NumFramesDirty = gNumFrameResources so that each frame resource gets the update.
 	int NumFramesDirty = gNumFrameResources;
 
+	// Index into GPU constant buffer corresponding to the ObjectCB for this render item.
 	UINT ObjCBIndex = -1;
 
 	MeshGeometry* Geo = nullptr;
 
+	// Primitive topology.
 	D3D12_PRIMITIVE_TOPOLOGY PrimitiveType = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
+	// DrawIndexedInstanced parameters.
 	UINT IndexCount = 0;
 	UINT StartIndexLocation = 0;
 	int BaseVertexLocation = 0;
 };
 
-class ShapeApp : public D3DApp
+class ShapesApp : public D3DApp
 {
 public:
-	ShapeApp(HINSTANCE hInstance);
-	ShapeApp(const ShapeApp& rhs) = delete;
-	ShapeApp& operator=(const ShapeApp& rhs) = delete;
-	~ShapeApp();
+	ShapesApp(HINSTANCE hInstance);
+	ShapesApp(const ShapesApp& rhs) = delete;
+	ShapesApp& operator=(const ShapesApp& rhs) = delete;
+	~ShapesApp();
 
 	virtual bool Initialize()override;
 
@@ -51,7 +69,7 @@ private:
 	void OnKeyboardInput(const GameTimer& gt);
 	void UpdateCamera(const GameTimer& gt);
 	void UpdateObjectCBs(const GameTimer& gt);
-	void UpdateMainpassCB(const GameTimer& gt);
+	void UpdateMainPassCB(const GameTimer& gt);
 
 	void BuildDescriptorHeaps();
 	void BuildConstantBufferViews();
@@ -64,6 +82,7 @@ private:
 	void DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems);
 
 private:
+
 	std::vector<std::unique_ptr<FrameResource>> mFrameResources;
 	FrameResource* mCurrFrameResource = nullptr;
 	int mCurrFrameResourceIndex = 0;
@@ -79,15 +98,17 @@ private:
 
 	std::vector<D3D12_INPUT_ELEMENT_DESC> mInputLayout;
 
+	// List of all the render items.
 	std::vector<std::unique_ptr<RenderItem>> mAllRitems;
 
+	// Render items divided by PSO.
 	std::vector<RenderItem*> mOpaqueRitems;
 
 	PassConstants mMainPassCB;
 
 	UINT mPassCbvOffset = 0;
 
-	bool mIsWireframe = 0;
+	bool mIsWireframe = false;
 
 	XMFLOAT3 mEyePos = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4X4 mView = MathHelper::Identity4X4();
@@ -100,38 +121,41 @@ private:
 	POINT mLastMousePos;
 };
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE preInstance, PSTR cmdLine, int showCmd)
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE prevInstance,
+	PSTR cmdLine, int showCmd)
 {
+	// Enable run-time memory check for debug builds.
 #if defined(DEBUG) | defined(_DEBUG)
 	_CrtSetDbgFlag(_CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 #endif
 
 	try
 	{
-		ShapeApp theApp(hInstance);
+		ShapesApp theApp(hInstance);
 		if (!theApp.Initialize())
 			return 0;
 
 		return theApp.Run();
 	}
-	catch (DxException e)
+	catch (DxException& e)
 	{
 		MessageBox(nullptr, e.ToString().c_str(), L"HR Failed", MB_OK);
 		return 0;
 	}
 }
 
-ShapeApp::ShapeApp(HINSTANCE hInstance):D3DApp(hInstance)
+ShapesApp::ShapesApp(HINSTANCE hInstance)
+	: D3DApp(hInstance)
 {
 }
 
-ShapeApp::~ShapeApp()
+ShapesApp::~ShapesApp()
 {
 	if (md3dDevice != nullptr)
 		FlushCommandQueue();
 }
 
-bool ShapeApp::Initialize()
+bool ShapesApp::Initialize()
 {
 	if (!D3DApp::Initialize())
 		return false;
@@ -159,22 +183,26 @@ bool ShapeApp::Initialize()
 	return true;
 }
 
-void ShapeApp::OnResize()
+void ShapesApp::OnResize()
 {
 	D3DApp::OnResize();
 
-	XMMATRIX p = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
-	XMStoreFloat4x4(&mProj, p);
+	// The window resized, so update the aspect ratio and recompute the projection matrix.
+	XMMATRIX P = XMMatrixPerspectiveFovLH(0.25f*MathHelper::Pi, AspectRatio(), 1.0f, 1000.0f);
+	XMStoreFloat4x4(&mProj, P);
 }
 
-void ShapeApp::Update(const GameTimer & gt)
+void ShapesApp::Update(const GameTimer& gt)
 {
 	OnKeyboardInput(gt);
 	UpdateCamera(gt);
 
+	// Cycle through the circular frame resource array.
 	mCurrFrameResourceIndex = (mCurrFrameResourceIndex + 1) % gNumFrameResources;
 	mCurrFrameResource = mFrameResources[mCurrFrameResourceIndex].get();
 
+	// Has the GPU finished processing the commands of the current frame resource?
+	// If not, wait until the GPU has completed commands up to this fence point.
 	if (mCurrFrameResource->Fence != 0 && mFence->GetCompletedValue() < mCurrFrameResource->Fence)
 	{
 		HANDLE eventHandle = CreateEventEx(nullptr, false, false, EVENT_ALL_ACCESS);
@@ -184,10 +212,10 @@ void ShapeApp::Update(const GameTimer & gt)
 	}
 
 	UpdateObjectCBs(gt);
-	UpdateMainpassCB(gt);
+	UpdateMainPassCB(gt);
 }
 
-void ShapeApp::Draw(const GameTimer & gt)
+void ShapesApp::Draw(const GameTimer& gt)
 {
 	auto cmdListAlloc = mCurrFrameResource->CmdListAlloc;
 
@@ -256,7 +284,7 @@ void ShapeApp::Draw(const GameTimer & gt)
 	mCommandQueue->Signal(mFence.Get(), mCurrentFence);
 }
 
-void ShapeApp::OnMouseDown(WPARAM btnState, int x, int y)
+void ShapesApp::OnMouseDown(WPARAM btnState, int x, int y)
 {
 	mLastMousePos.x = x;
 	mLastMousePos.y = y;
@@ -264,12 +292,12 @@ void ShapeApp::OnMouseDown(WPARAM btnState, int x, int y)
 	SetCapture(mhMainWnd);
 }
 
-void ShapeApp::OnMouseUp(WPARAM btnState, int x, int y)
+void ShapesApp::OnMouseUp(WPARAM btnState, int x, int y)
 {
 	ReleaseCapture();
 }
 
-void ShapeApp::OnMouseMove(WPARAM btnState, int x, int y)
+void ShapesApp::OnMouseMove(WPARAM btnState, int x, int y)
 {
 	if ((btnState & MK_LBUTTON) != 0)
 	{
@@ -301,7 +329,7 @@ void ShapeApp::OnMouseMove(WPARAM btnState, int x, int y)
 	mLastMousePos.y = y;
 }
 
-void ShapeApp::OnKeyboardInput(const GameTimer & gt)
+void ShapesApp::OnKeyboardInput(const GameTimer& gt)
 {
 	if (GetAsyncKeyState('1') & 0x8000)
 		mIsWireframe = true;
@@ -309,7 +337,7 @@ void ShapeApp::OnKeyboardInput(const GameTimer & gt)
 		mIsWireframe = false;
 }
 
-void ShapeApp::UpdateCamera(const GameTimer & gt)
+void ShapesApp::UpdateCamera(const GameTimer& gt)
 {
 	// Convert Spherical to Cartesian coordinates.
 	mEyePos.x = mRadius*sinf(mPhi)*cosf(mTheta);
@@ -325,7 +353,7 @@ void ShapeApp::UpdateCamera(const GameTimer & gt)
 	XMStoreFloat4x4(&mView, view);
 }
 
-void ShapeApp::UpdateObjectCBs(const GameTimer & gt)
+void ShapesApp::UpdateObjectCBs(const GameTimer& gt)
 {
 	auto currObjectCB = mCurrFrameResource->ObjectCB.get();
 	for (auto& e : mAllRitems)
@@ -347,7 +375,7 @@ void ShapeApp::UpdateObjectCBs(const GameTimer & gt)
 	}
 }
 
-void ShapeApp::UpdateMainpassCB(const GameTimer & gt)
+void ShapesApp::UpdateMainPassCB(const GameTimer& gt)
 {
 	XMMATRIX view = XMLoadFloat4x4(&mView);
 	XMMATRIX proj = XMLoadFloat4x4(&mProj);
@@ -375,7 +403,7 @@ void ShapeApp::UpdateMainpassCB(const GameTimer & gt)
 	currPassCB->CopyData(0, mMainPassCB);
 }
 
-void ShapeApp::BuildDescriptorHeaps()
+void ShapesApp::BuildDescriptorHeaps()
 {
 	UINT objCount = (UINT)mOpaqueRitems.size();
 
@@ -395,7 +423,7 @@ void ShapeApp::BuildDescriptorHeaps()
 		IID_PPV_ARGS(&mCbvHeap)));
 }
 
-void ShapeApp::BuildConstantBufferViews()
+void ShapesApp::BuildConstantBufferViews()
 {
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 
@@ -446,7 +474,7 @@ void ShapeApp::BuildConstantBufferViews()
 	}
 }
 
-void ShapeApp::BuildRootSignature()
+void ShapesApp::BuildRootSignature()
 {
 	CD3DX12_DESCRIPTOR_RANGE cbvTable0;
 	cbvTable0.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
@@ -484,7 +512,7 @@ void ShapeApp::BuildRootSignature()
 		IID_PPV_ARGS(mRootSignature.GetAddressOf())));
 }
 
-void ShapeApp::BuildShadersAndInputLayout()
+void ShapesApp::BuildShadersAndInputLayout()
 {
 	mShaders["standardVS"] = d3dUtil::CompileShader(L"Shaders\\color.hlsl", nullptr, "VS", "vs_5_1");
 	mShaders["opaquePS"] = d3dUtil::CompileShader(L"Shaders\\color.hlsl", nullptr, "PS", "ps_5_1");
@@ -496,9 +524,8 @@ void ShapeApp::BuildShadersAndInputLayout()
 	};
 }
 
-void ShapeApp::BuildShapeGeometry()
+void ShapesApp::BuildShapeGeometry()
 {
-
 	GeometryGenerator geoGen;
 	GeometryGenerator::MeshData box = geoGen.CreateBox(1.5f, 0.5f, 1.5f, 3);
 	GeometryGenerator::MeshData grid = geoGen.CreateGrid(20.0f, 30.0f, 60, 40);
@@ -620,7 +647,7 @@ void ShapeApp::BuildShapeGeometry()
 	mGeometries[geo->Name] = std::move(geo);
 }
 
-void ShapeApp::BuildPSOs()
+void ShapesApp::BuildPSOs()
 {
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC opaquePsoDesc;
 
@@ -663,7 +690,7 @@ void ShapeApp::BuildPSOs()
 	ThrowIfFailed(md3dDevice->CreateGraphicsPipelineState(&opaqueWireframePsoDesc, IID_PPV_ARGS(&mPSOs["opaque_wireframe"])));
 }
 
-void ShapeApp::BuildFrameResources()
+void ShapesApp::BuildFrameResources()
 {
 	for (int i = 0; i < gNumFrameResources; ++i)
 	{
@@ -672,7 +699,7 @@ void ShapeApp::BuildFrameResources()
 	}
 }
 
-void ShapeApp::BuildRenderItems()
+void ShapesApp::BuildRenderItems()
 {
 	auto boxRitem = std::make_unique<RenderItem>();
 	XMStoreFloat4x4(&boxRitem->World, XMMatrixScaling(2.0f, 2.0f, 2.0f)*XMMatrixTranslation(0.0f, 0.5f, 0.0f));
@@ -751,7 +778,7 @@ void ShapeApp::BuildRenderItems()
 		mOpaqueRitems.push_back(e.get());
 }
 
-void ShapeApp::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::vector<RenderItem*>& ritems)
+void ShapesApp::DrawRenderItems(ID3D12GraphicsCommandList* cmdList, const std::vector<RenderItem*>& ritems)
 {
 	UINT objCBByteSize = d3dUtil::CalcConstantBufferByteSize(sizeof(ObjectConstants));
 
@@ -776,5 +803,3 @@ void ShapeApp::DrawRenderItems(ID3D12GraphicsCommandList * cmdList, const std::v
 		cmdList->DrawIndexedInstanced(ri->IndexCount, 1, ri->StartIndexLocation, ri->BaseVertexLocation, 0);
 	}
 }
-
-

@@ -1,12 +1,13 @@
 #pragma once
 
-#include<cstdint>
-#include<DirectXMath.h>
-#include<vector>
+#include <cstdint>
+#include <DirectXMath.h>
+#include <vector>
 
 class GeometryGenerator
 {
 public:
+
 	using uint16 = std::uint16_t;
 	using uint32 = std::uint32_t;
 
@@ -17,12 +18,11 @@ public:
 			const DirectX::XMFLOAT3& p,
 			const DirectX::XMFLOAT3& n,
 			const DirectX::XMFLOAT3& t,
-			const DirectX::XMFLOAT2& uv):
-		Position(p),
-		Normal(n),
-		TangentU(t),
-		Texc(uv){}
-
+			const DirectX::XMFLOAT2& uv) :
+			Position(p),
+			Normal(n),
+			TangentU(t),
+			TexC(uv) {}
 		Vertex(
 			float px, float py, float pz,
 			float nx, float ny, float nz,
@@ -31,13 +31,12 @@ public:
 			Position(px, py, pz),
 			Normal(nx, ny, nz),
 			TangentU(tx, ty, tz),
-			Texc(u, v) {}
-
+			TexC(u, v) {}
 
 		DirectX::XMFLOAT3 Position;
 		DirectX::XMFLOAT3 Normal;
 		DirectX::XMFLOAT3 TangentU;
-		DirectX::XMFLOAT2 Texc;
+		DirectX::XMFLOAT2 TexC;
 	};
 
 	struct MeshData
@@ -56,6 +55,7 @@ public:
 
 			return mIndices16;
 		}
+
 	private:
 		std::vector<uint16> mIndices16;
 	};
@@ -99,6 +99,7 @@ public:
 private:
 	void Subdivide(MeshData& meshData);
 	Vertex MidPoint(const Vertex& v0, const Vertex& v1);
-	void BuildCylinderTopCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCoutn, MeshData meshData);
-	void BuildCylinderBottomCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCoutn, MeshData meshData);
+	void BuildCylinderTopCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount, MeshData& meshData);
+	void BuildCylinderBottomCap(float bottomRadius, float topRadius, float height, uint32 sliceCount, uint32 stackCount, MeshData& meshData);
 };
+
